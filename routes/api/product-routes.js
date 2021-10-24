@@ -3,21 +3,11 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 
 
 
-// GET /api/products - the GET all products endpoint
+// GET - the /api/products - GET all products endpoint
 router.get('/', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
   Product.findAll({
-    // attributes: [
-    //    'id',
-    //    'post_url',
-    //    'title',
-    //    'created_at',
-    //    /*
-    //    ! add count of votes per post         
-    //    */
-    //    [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count'],
-    // ],
     // order: [['created_at', 'DESC']],
     include: [
        {
@@ -37,13 +27,34 @@ router.get('/', (req, res) => {
     });
 });
 
-// get one product
+// GET - the /api/products/1 - GET product=1 endpoint
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  Product.findOne({
+    // order: [['created_at', 'DESC']],
+    where: {
+      id: req.params.id,
+   },
+    include: [
+       {
+          model: Category,
+          attributes: ['category_name'],
+       },
+       {
+          model: Tag,
+          attributes: ['tag_name'],
+       },
+    ],
+ })
+    .then(dbProductData => res.json(dbProductData))
+    .catch(err => {
+       console.log(err);
+       res.status(500).json(err);
+    });
 });
 
-// create new product
+// POST - the /api/products - CREATE one new product endpoint
 router.post('/', (req, res) => {
   /* req.body should look like this...
     {
@@ -60,7 +71,7 @@ router.post('/', (req, res) => {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
             product_id: product.id,
-            tag_id,
+            tag_id ,
           };
         });
         return ProductTag.bulkCreate(productTagIdArr);
@@ -75,7 +86,8 @@ router.post('/', (req, res) => {
     });
 });
 
-// update product
+
+// PUT - the /api/products/1 - UPDATE product=1 endpoint
 router.put('/:id', (req, res) => {
   // update product data
   Product.update(req.body, {
@@ -119,6 +131,23 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
+  Product.destroy({
+    where: {
+       id: req.params.id,
+    },
+ })
+    .then(dbProductData => {
+       // dbCategoryData[0] is the first element of the response Array, the id
+       if (!dbProductData) {
+          res.status(404).json({ message: 'No product found with this id' });
+          return;
+       }
+       res.json(dbProductData);
+    })
+    .catch(err => {
+       console.log(err);
+       res.status(500).json(err);
+    });
 });
 
 module.exports = router;
