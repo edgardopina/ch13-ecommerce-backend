@@ -1,22 +1,19 @@
-const router = require('express').Router();
-const { Product, Category, Tag, ProductTag } = require('../../models');
-
+const router = require('express').Router(); // import Router
+const { Product, Category, Tag, ProductTag } = require('../../models'); // import models
 
 
 // GET - the /api/products - GET all products endpoint
 router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
   Product.findAll({
-    // order: [['created_at', 'DESC']],
+    // including its associated Category and Tag data
     include: [
        {
           model: Category,
-          attributes: ['category_name'],
+          attributes: ['id', 'category_name'],
        },
        {
           model: Tag,
-          attributes: ['tag_name'],
+          attributes: ['id', 'tag_name'],
        },
     ],
  })
@@ -29,21 +26,19 @@ router.get('/', (req, res) => {
 
 // GET - the /api/products/1 - GET product=1 endpoint
 router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
   Product.findOne({
-    // order: [['created_at', 'DESC']],
     where: {
       id: req.params.id,
-   },
+    },
+    // including its associated Category and Tag data
     include: [
        {
           model: Category,
-          attributes: ['category_name'],
+          attributes: ['id', 'category_name'],
        },
        {
           model: Tag,
-          attributes: ['tag_name'],
+          attributes: ['id','tag_name'],
        },
     ],
  })
@@ -66,7 +61,7 @@ router.post('/', (req, res) => {
   */
   Product.create(req.body)
     .then((product) => {
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
+      // if there's product tags in tagIds, we need to create pairings to bulk create in the ProductTag model
       if (req.body.tagIds.length) {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
@@ -89,7 +84,6 @@ router.post('/', (req, res) => {
 
 // PUT - the /api/products/1 - UPDATE product=1 endpoint
 router.put('/:id', (req, res) => {
-  // update product data
   Product.update(req.body, {
     where: {
       id: req.params.id,
@@ -130,14 +124,12 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
   Product.destroy({
     where: {
        id: req.params.id,
     },
  })
     .then(dbProductData => {
-       // dbCategoryData[0] is the first element of the response Array, the id
        if (!dbProductData) {
           res.status(404).json({ message: 'No product found with this id' });
           return;

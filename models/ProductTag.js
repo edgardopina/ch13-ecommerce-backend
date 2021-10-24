@@ -1,12 +1,10 @@
-const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/connection'); // import sequelize connection
+const { Model, DataTypes} = require('sequelize'); // import Model and DataTypes from sequelize
 
-const sequelize = require('../config/connection');
-
+// declare and initialize ProductTag model (table) by extending from Sequelize's Model class
 class ProductTag extends Model {}
-
 ProductTag.init(
    {
-      // define columns
       id: {
          type: DataTypes.INTEGER,
          allowNull: false,
